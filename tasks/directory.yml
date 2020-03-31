@@ -1,0 +1,39 @@
+---
+- name: Check if mysql_pid_file directory exists.
+  stat:
+    path: "{{ mysql_pid_file | dirname }}"
+  register: mysql_pid_dir
+
+- name: Create mysql_pid_file directory if it does not exist.
+  file:
+    path: "{{ mysql_pid_file | dirname }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: 0775
+    setype: mysqld_var_run_t
+  when: not mysql_pid_dir.stat.exists
+
+- name: Ensure mysql_pid_file directory created on boot.
+  template:
+    src: tmpfiles.d/mysql.conf.j2
+    dest: '/etc/tmpfiles.d/mysql.conf'
+    owner: root
+    group: root
+    mode: 0660
+  when: not mysql_pid_dir.stat.exists
+
+- name: Check if mysql_log_error directory exists.
+  stat:
+    path: "{{ mysql_log_error | dirname }}"
+  register: mysql_log_error_dir
+
+- name: Create mysql_log_error directory if it does not exist.
+  file:
+    path: "{{ mysql_log_error | dirname }}"
+    state: directory
+    owner: mysql
+    group: "{{ mysql_log_file_group }}"
+    mode: 0755
+    setype: mysqld_db_t
+  when: not mysql_log_error_dir.stat.exists
