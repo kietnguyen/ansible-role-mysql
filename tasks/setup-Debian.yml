@@ -1,11 +1,13 @@
 ---
+- name: Refresh apt caches
+  apt: update_cache=yes
+
+- name: Ensure apt-transport-https is installed.
+  apt: name=apt-transport-https state=present
+
 - name: Check if MySQL is already installed.
   stat: path=/etc/init.d/mysql
   register: mysql_installed
-
-- name: Update apt cache if MySQL is not yet installed.
-  apt: update_cache=yes
-  when: not mysql_installed.stat.exists
 
 - name: Determine required MySQL Python libraries.
   set_fact:
